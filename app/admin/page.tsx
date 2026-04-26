@@ -60,6 +60,9 @@ function FotografYonetimi() {
   const [baslik, setBaslik] = useState("");
   const [kategori, setKategori] = useState("Voleybol");
   const [aciklama, setAciklama] = useState("");
+  const [fotograflar, setFotograflar] = useState<{id: string; url: string; baslik: string; kategori: string; aciklama: string}[]>([]);
+  const [siliniyor, setSiliniyor] = useState<string | null>(null);
+  const [duzenle, setDuzenle] = useState<string | null>(null);
 
   const kategoriler = ["Voleybol", "Basketbol", "Portre", "Aksiyon"];
 
@@ -75,6 +78,12 @@ function FotografYonetimi() {
     boxSizing: "border-box" as const,
   };
 
+  useEffect(() => {
+    fetch("/api/icerik")
+      .then((r) => r.json())
+      .then((data) => { if (data.fotograflar) setFotograflar(data.fotograflar); });
+  }, []);
+
   const handleYukle = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const dosya = e.target.files?.[0];
     if (!dosya) return;
@@ -88,14 +97,13 @@ function FotografYonetimi() {
     formData.append("aciklama", aciklama);
 
     try {
-      const res = await fetch("/api/admin/fotograf-yukle", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch("/api/admin/fotograf-yukle", { method: "POST", body: formData });
+      const data = await res.json();
       if (res.ok) {
         setMesaj("✅ Fotoğraf başarıyla yüklendi!");
         setBaslik("");
         setAciklama("");
+        setFotograflar((prev) => [...prev, data.fotograf]);
       } else {
         setMesaj("❌ Yükleme başarısız oldu.");
       }
@@ -106,51 +114,83 @@ function FotografYonetimi() {
     }
   };
 
+  const handleSil = async (foto: {id: string; publicId?: string; baslik: string}) => {
+    if (!confirm(`"${foto.baslik}" fotoğrafını silmek istediğinize emin misiniz?`)) return;
+    setSiliniyor(foto.id);
+    try {
+      const res = await fetch("/api/admin/fotograf-sil", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fotografId: foto.id, publicId: foto.publicId }),
+      });
+      if (res.ok) {
+        setFotograflar((prev) => prev.filter((f) => f.id !== foto.id));
+        setMesaj("✅ Fotoğraf silindi!");
+      } else {
+        setMesaj("❌ Silme başarısız.");
+      }
+    } catch {
+      setMesaj("❌ Bir hata oluştu.");
+    } finally {
+      setSiliniyor(null);
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "1.5rem", padding: "2rem" }}>
-        <h3 style={{ color: "white", fontWeight: 600, marginBottom: "1.5rem" }}>Fotoğraf Yükle</h3>
-
+        <h3 style={{ color: "white", fontWeight: 600, marginBottom: "1.5rem" }}>Yeni Fotoğraf Yükle</h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
           <div>
             <label style={{ color: "#9ca3af", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Başlık</label>
             <input style={inputStyle} value={baslik} onChange={(e) => setBaslik(e.target.value)} placeholder="Fotoğraf başlığı..." />
           </div>
-
           <div>
             <label style={{ color: "#9ca3af", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Kategori</label>
-            <select
-              value={kategori}
-              onChange={(e) => setKategori(e.target.value)}
-              style={{ ...inputStyle, cursor: "pointer" }}
-            >
+            <select value={kategori} onChange={(e) => setKategori(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
               {kategoriler.map((k) => (
                 <option key={k} value={k} style={{ background: "#1a1a24" }}>{k}</option>
               ))}
             </select>
           </div>
-
           <div>
             <label style={{ color: "#9ca3af", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Açıklama</label>
             <input style={inputStyle} value={aciklama} onChange={(e) => setAciklama(e.target.value)} placeholder="Fotoğraf açıklaması..." />
           </div>
         </div>
-
         <div style={{ border: "2px dashed rgba(255,255,255,0.15)", borderRadius: "1rem", padding: "2rem", textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>📸</div>
-          <p style={{ color: "#9ca3af", fontSize: "0.875rem", marginBottom: "1.5rem" }}>JPG, PNG veya WebP formatında fotoğraf yükleyin</p>
           <label style={{ display: "inline-block", padding: "0.75rem 2rem", borderRadius: "0.75rem", background: "linear-gradient(135deg, #16a34a, #2563eb)", color: "white", fontWeight: 500, cursor: "pointer", fontSize: "0.875rem" }}>
             {yukleniyor ? "Yükleniyor..." : "Fotoğraf Seç"}
             <input type="file" accept="image/*" onChange={handleYukle} style={{ display: "none" }} disabled={yukleniyor} />
           </label>
         </div>
-
-        {mesaj && (
-          <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: mesaj.includes("✅") ? "#4ade80" : "#f87171", textAlign: "center" }}>
-            {mesaj}
-          </p>
-        )}
+        {mesaj && <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: mesaj.includes("✅") ? "#4ade80" : "#f87171", textAlign: "center" }}>{mesaj}</p>}
       </div>
+
+      {fotograflar.length > 0 && (
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "1.5rem", padding: "2rem" }}>
+          <h3 style={{ color: "white", fontWeight: 600, marginBottom: "1.5rem" }}>Yüklenen Fotoğraflar ({fotograflar.length})</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+            {fotograflar.map((foto) => (
+              <div key={foto.id} style={{ position: "relative", borderRadius: "0.75rem", overflow: "hidden", aspectRatio: "1", background: "rgba(255,255,255,0.05)" }}>
+                <img src={foto.url} alt={foto.baslik} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0.75rem" }}>
+                  <p style={{ color: "white", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.25rem" }}>{foto.baslik}</p>
+                  <p style={{ color: "#4ade80", fontSize: "0.7rem", marginBottom: "0.5rem" }}>{foto.kategori}</p>
+                  <button
+                    onClick={() => handleSil(foto as {id: string; publicId?: string; baslik: string})}
+                    disabled={siliniyor === foto.id}
+                    style={{ padding: "0.3rem 0.75rem", borderRadius: "0.4rem", background: "rgba(239,68,68,0.8)", color: "white", border: "none", cursor: "pointer", fontSize: "0.75rem", fontWeight: 500 }}
+                  >
+                    {siliniyor === foto.id ? "Siliniyor..." : "Sil"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
