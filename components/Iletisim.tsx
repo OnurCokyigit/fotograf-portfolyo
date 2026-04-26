@@ -1,10 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Iletisim() {
+  const [icerik, setIcerik] = useState({
+    baslik: "Birlikte Çalışalım",
+    aciklama: "Takımınız veya etkinliğiniz için fotoğraf çekimi hakkında benimle iletişime geçin.",
+    email: "fotograf@email.com",
+    telefon: "+90 555 000 0000",
+    konum: "Türkiye",
+  });
+
   const [form, setForm] = useState({ ad: "", email: "", konu: "", mesaj: "" });
   const [durum, setDurum] = useState<"bos" | "gonderiliyor" | "basarili" | "hata">("bos");
+
+  useEffect(() => {
+    fetch("/api/icerik")
+      .then((r) => r.json())
+      .then((data) => { if (data.iletisim) setIcerik(data.iletisim); });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,18 +53,18 @@ export default function Iletisim() {
             İletişim
           </p>
           <h2 style={{ fontSize: "3rem", fontWeight: "bold", marginBottom: "1rem" }}>
-            <span className="text-gradient">Birlikte Çalışalım</span>
+            <span className="text-gradient">{icerik.baslik}</span>
           </h2>
           <p style={{ color: "#9ca3af", fontSize: "1.125rem" }}>
-            Takımınız veya etkinliğiniz için fotoğraf çekimi hakkında benimle iletişime geçin.
+            {icerik.aciklama}
           </p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem", marginBottom: "3rem" }}>
           {[
-            { ikon: "📧", baslik: "E-posta", deger: "fotograf@email.com" },
-            { ikon: "📱", baslik: "Telefon", deger: "+90 555 000 0000" },
-            { ikon: "📍", baslik: "Konum", deger: "Türkiye" },
+            { ikon: "📧", baslik: "E-posta", deger: icerik.email },
+            { ikon: "📱", baslik: "Telefon", deger: icerik.telefon },
+            { ikon: "📍", baslik: "Konum", deger: icerik.konum },
           ].map((item) => (
             <div key={item.baslik} className="glass" style={{ borderRadius: "1rem", padding: "1.5rem", textAlign: "center" }}>
               <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>{item.ikon}</div>

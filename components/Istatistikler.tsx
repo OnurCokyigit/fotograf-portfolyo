@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const istatistikler = [
-  { sayi: 500, suffix: "+", etiket: "Çekilen Fotoğraf", ikon: "📷" },
-  { sayi: 50, suffix: "+", etiket: "Tamamlanan Proje", ikon: "🏆" },
-  { sayi: 20, suffix: "+", etiket: "Çalışılan Takım", ikon: "🏀" },
-  { sayi: 3, suffix: "+", etiket: "Yıllık Deneyim", ikon: "⭐" },
-];
+interface IstatistikItem {
+  sayi: number;
+  suffix: string;
+  etiket: string;
+  ikon: string;
+}
 
 function SayacAnimasyonu({ hedef, suffix }: { hedef: number; suffix: string }) {
   const [sayi, setSayi] = useState(0);
@@ -35,6 +35,19 @@ function SayacAnimasyonu({ hedef, suffix }: { hedef: number; suffix: string }) {
 }
 
 export default function Istatistikler() {
+  const [istatistikler, setIstatistikler] = useState<IstatistikItem[]>([
+    { sayi: 500, suffix: "+", etiket: "Çekilen Fotoğraf", ikon: "📷" },
+    { sayi: 50, suffix: "+", etiket: "Tamamlanan Proje", ikon: "🏆" },
+    { sayi: 20, suffix: "+", etiket: "Çalışılan Takım", ikon: "🏀" },
+    { sayi: 3, suffix: "+", etiket: "Yıllık Deneyim", ikon: "⭐" },
+  ]);
+
+  useEffect(() => {
+    fetch("/api/icerik")
+      .then((r) => r.json())
+      .then((data) => { if (data.istatistikler) setIstatistikler(data.istatistikler); });
+  }, []);
+
   return (
     <section id="istatistikler" style={{ width: "100%", padding: "8rem 0", background: "rgba(17,17,24,0.5)" }}>
       <div style={{ width: "100%", maxWidth: "1200px", margin: "0 auto", padding: "0 2rem" }}>

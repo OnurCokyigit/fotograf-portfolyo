@@ -1,0 +1,80 @@
+{
+  "hero": {
+    "unvan": "Spor Fotoğrafçısı",
+    "baslik": "Anı Yakala,",
+    "baslikGradient": "Hikayeyi Anlat",
+    "aciklama": "Voleybol ve basketbol sahalarındaki en güçlü anları, en ince detayları ve en derin duyguları fotoğraflıyorum.",
+    "istatistikler": [
+      {
+        "sayi": "500+",
+        "etiket": "Fotoğraf"
+      },
+      {
+        "sayi": "50+",
+        "etiket": "Proje"
+      },
+      {
+        "sayi": "20+",
+        "etiket": "Takım"
+      }
+    ]
+  },
+  "hakkinda": {
+    "baslik": "Sahada Bir",
+    "baslikGradient": "Hikaye Anlatıcısı",
+    "biyografi1": "Voleybol ve basketbol dünyasında yıllar içinde edindiğim deneyimle, sporcuların en güçlü anlarını ölümsüzleştiriyorum. Her fotoğraf, o anın enerjisini ve duygusunu taşıyor.",
+    "biyografi2": "Bireysel performans fotoğraflarından takım dinamiklerine kadar, her kareden en iyi hikayeyi çıkarmak için çalışıyorum.",
+    "uzmanlik": "Spor Fotoğrafçılığı",
+    "odak": "Voleybol & Basketbol",
+    "deneyim": "3+ Yıl",
+    "konum": "Türkiye"
+  },
+  "istatistikler": [
+    {
+      "sayi": 500,
+      "suffix": "+",
+      "etiket": "Çekilen Fotoğraf",
+      "ikon": "📷"
+    },
+    {
+      "sayi": 50,
+      "suffix": "+",
+      "etiket": "Tamamlanan Proje",
+      "ikon": "🏆"
+    },
+    {
+      "sayi": 20,
+      "suffix": "+",
+      "etiket": "Çalışılan Takım",
+      "ikon": "🏀"
+    },
+    {
+      "sayi": 3,
+      "suffix": "+",
+      "etiket": "Yıllık Deneyim",
+      "ikon": "⭐"
+    }
+  ],
+  "galeri": {
+    "kategoriler": [
+      "Tümü",
+      "Voleybol",
+      "Basketbol",
+      "Portre",
+      "Aksiyon"
+    ]
+  },
+  "iletisim": {
+    "baslik": "Birlikte Çalışalım",
+    "aciklama": "Takımınız veya etkinliğiniz için fotoğraf çekimi hakkında benimle iletişime geçin.",
+    "email": "fotograf@email.com",
+    "telefon": "+90 313 131 3131",
+    "konum": "Türkiye"
+  },
+  "footer": {
+    "sitAdi": "LENS & MOMENT",
+    "instagram": "#",
+    "twitter": "#",
+    "linkedin": "#"
+  }
+}
