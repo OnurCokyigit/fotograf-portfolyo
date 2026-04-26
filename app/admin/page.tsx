@@ -57,32 +57,100 @@ export default function AdminPanel() {
 function FotografYonetimi() {
   const [yukleniyor, setYukleniyor] = useState(false);
   const [mesaj, setMesaj] = useState("");
+  const [baslik, setBaslik] = useState("");
+  const [kategori, setKategori] = useState("Voleybol");
+  const [aciklama, setAciklama] = useState("");
+
+  const kategoriler = ["Voleybol", "Basketbol", "Portre", "Aksiyon"];
+
+  const inputStyle = {
+    width: "100%",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "0.5rem",
+    padding: "0.6rem 0.875rem",
+    color: "white",
+    fontSize: "0.875rem",
+    outline: "none",
+    boxSizing: "border-box" as const,
+  };
 
   const handleYukle = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const dosya = e.target.files?.[0];
     if (!dosya) return;
     setYukleniyor(true);
     setMesaj("");
+
     const formData = new FormData();
     formData.append("file", dosya);
+    formData.append("baslik", baslik || dosya.name);
+    formData.append("kategori", kategori);
+    formData.append("aciklama", aciklama);
+
     try {
-      const res = await fetch("/api/admin/fotograf-yukle", { method: "POST", body: formData });
-      if (res.ok) setMesaj("✅ Fotoğraf başarıyla yüklendi!");
-      else setMesaj("❌ Yükleme başarısız oldu.");
-    } catch { setMesaj("❌ Bir hata oluştu."); }
-    finally { setYukleniyor(false); }
+      const res = await fetch("/api/admin/fotograf-yukle", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        setMesaj("✅ Fotoğraf başarıyla yüklendi!");
+        setBaslik("");
+        setAciklama("");
+      } else {
+        setMesaj("❌ Yükleme başarısız oldu.");
+      }
+    } catch {
+      setMesaj("❌ Bir hata oluştu.");
+    } finally {
+      setYukleniyor(false);
+    }
   };
 
   return (
-    <div style={{ background: "rgba(255,255,255,0.03)", border: "2px dashed rgba(255,255,255,0.15)", borderRadius: "1.5rem", padding: "3rem", textAlign: "center" }}>
-      <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📸</div>
-      <h3 style={{ color: "white", fontSize: "1.125rem", fontWeight: 600, marginBottom: "0.5rem" }}>Fotoğraf Yükle</h3>
-      <p style={{ color: "#9ca3af", fontSize: "0.875rem", marginBottom: "1.5rem" }}>JPG, PNG veya WebP formatında fotoğraf yükleyin</p>
-      <label style={{ display: "inline-block", padding: "0.75rem 2rem", borderRadius: "0.75rem", background: "linear-gradient(135deg, #16a34a, #2563eb)", color: "white", fontWeight: 500, cursor: "pointer", fontSize: "0.875rem" }}>
-        {yukleniyor ? "Yükleniyor..." : "Fotoğraf Seç"}
-        <input type="file" accept="image/*" onChange={handleYukle} style={{ display: "none" }} disabled={yukleniyor} />
-      </label>
-      {mesaj && <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: mesaj.includes("✅") ? "#4ade80" : "#f87171" }}>{mesaj}</p>}
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "1.5rem", padding: "2rem" }}>
+        <h3 style={{ color: "white", fontWeight: 600, marginBottom: "1.5rem" }}>Fotoğraf Yükle</h3>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.5rem" }}>
+          <div>
+            <label style={{ color: "#9ca3af", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Başlık</label>
+            <input style={inputStyle} value={baslik} onChange={(e) => setBaslik(e.target.value)} placeholder="Fotoğraf başlığı..." />
+          </div>
+
+          <div>
+            <label style={{ color: "#9ca3af", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Kategori</label>
+            <select
+              value={kategori}
+              onChange={(e) => setKategori(e.target.value)}
+              style={{ ...inputStyle, cursor: "pointer" }}
+            >
+              {kategoriler.map((k) => (
+                <option key={k} value={k} style={{ background: "#1a1a24" }}>{k}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ color: "#9ca3af", fontSize: "0.75rem", display: "block", marginBottom: "0.4rem" }}>Açıklama</label>
+            <input style={inputStyle} value={aciklama} onChange={(e) => setAciklama(e.target.value)} placeholder="Fotoğraf açıklaması..." />
+          </div>
+        </div>
+
+        <div style={{ border: "2px dashed rgba(255,255,255,0.15)", borderRadius: "1rem", padding: "2rem", textAlign: "center" }}>
+          <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>📸</div>
+          <p style={{ color: "#9ca3af", fontSize: "0.875rem", marginBottom: "1.5rem" }}>JPG, PNG veya WebP formatında fotoğraf yükleyin</p>
+          <label style={{ display: "inline-block", padding: "0.75rem 2rem", borderRadius: "0.75rem", background: "linear-gradient(135deg, #16a34a, #2563eb)", color: "white", fontWeight: 500, cursor: "pointer", fontSize: "0.875rem" }}>
+            {yukleniyor ? "Yükleniyor..." : "Fotoğraf Seç"}
+            <input type="file" accept="image/*" onChange={handleYukle} style={{ display: "none" }} disabled={yukleniyor} />
+          </label>
+        </div>
+
+        {mesaj && (
+          <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: mesaj.includes("✅") ? "#4ade80" : "#f87171", textAlign: "center" }}>
+            {mesaj}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
