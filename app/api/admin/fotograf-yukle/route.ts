@@ -30,19 +30,60 @@ export async function POST(request: Request) {
   const bytes = await dosya.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  const sonuc = await new Promise((resolve, reject) => {
+  const yuklemeSonucu = await new Promise<{secure_url: string, public_id: string}>((resolve, reject) => {
     cloudinary.uploader.upload_stream(
-      {
-        folder: "fotograf-portfolyo",
-        tags: [kategori],
-        context: `baslik=${baslik}|aciklama=${aciklama}|kategori=${kategori}`,
-      },
+      { folder: "fotograf-portfolyo" },
       (error, result) => {
         if (error) reject(error);
-        else resolve(result);
+        else resolve(result as {secure_url: string, public_id: string});
       }
     ).end(buffer);
   });
 
-  return NextResponse.json({ success: true, sonuc });
+  const githubToken = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH;
+  const dosyaYolu = "data/icerik.json";
+
+  const mevcutDosya = await fetch(
+    `https://api.github.com/repos/${repo}/contents/${dosyaYolu}`,
+    { headers: { Authorization: `Bearer ${githubToken}`, Accept: "application/vnd.github.v3+json" } }
+  );
+  const mevcutData = await mevcutDosya.json();
+  const mevcutIcerik = JSON.parse(Buffer.from(mevcutData.content, "base64").toString("utf-8"));
+
+  const yeniFotograf = {
+    id: Date.now().toString(),
+    url: yuklemeSonucu.secure_url,
+    publicId: yuklemeSonucu.public_id,
+    baslik,
+    kategori,
+    aciklama,
+    tarih: new Date().toISOString(),
+  };
+
+  mevcutIcerik.fotograflar = [...(mevcutIcerik.fotograflar || []), yeniFotograf];
+
+  const yeniIcerikStr = JSON.stringify(mevcutIcerik, null, 2);
+  const yeniIcerikBase64 = Buffer.from(yeniIcerikStr).toString("base64");
+
+  await fetch(
+    `https://api.github.com/repos/${repo}/contents/${dosyaYolu}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${githubToken}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `fotograf eklendi: ${baslik}`,
+        content: yeniIcerikBase64,
+        sha: mevcutData.sha,
+        branch,
+      }),
+    }
+  );
+
+  return NextResponse.json({ success: true, fotograf: yeniFotograf });
 }
