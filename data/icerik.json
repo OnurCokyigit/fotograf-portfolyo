@@ -77,15 +77,5 @@
     "twitter": "#",
     "linkedin": "#"
   },
-  "fotograflar": [
-    {
-      "id": "1777227950957",
-      "url": "https://res.cloudinary.com/dbfxqfsvt/image/upload/v1777227950/fotograf-portfolyo/ejrpmwllxmbllmujgepc.jpg",
-      "publicId": "fotograf-portfolyo/ejrpmwllxmbllmujgepc",
-      "baslik": "r&m",
-      "kategori": "Portre",
-      "aciklama": "r&m sezon bilmem kaçtan bir görsel",
-      "tarih": "2026-04-26T18:25:50.957Z"
-    }
-  ]
+  "fotograflar": []
 }
